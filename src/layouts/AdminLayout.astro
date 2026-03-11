@@ -1,0 +1,42 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+}
+const { title } = Astro.props;
+const user = Astro.locals.user;
+---
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title} — Admin</title>
+    <slot name="head" />
+  </head>
+  <body class="bg-neutral-100 text-neutral-900 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white border-b border-neutral-200 px-6 py-3 flex items-center justify-between sticky top-0 z-10 shadow-sm">
+      <a href="/admin/dashboard" class="font-bold text-lg text-cyan-600 hover:text-cyan-500 transition-colors">
+        EB <span class="text-neutral-400 font-normal text-sm">/ Admin</span>
+      </a>
+      <div class="flex items-center gap-4">
+        <span class="text-sm text-neutral-500 hidden sm:block">{user}</span>
+        <form method="POST" action="/admin/logout">
+          <button
+            type="submit"
+            class="text-sm px-3 py-1.5 rounded-lg border border-neutral-300 text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 transition-colors font-medium"
+          >
+            Logout
+          </button>
+        </form>
+      </div>
+    </header>
+
+    <!-- Main content -->
+    <main class="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+      <slot />
+    </main>
+  </body>
+</html>

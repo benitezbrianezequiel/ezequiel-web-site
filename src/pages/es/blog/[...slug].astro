@@ -1,0 +1,21 @@
+---
+import BlogPostLayout from '../../../layouts/BlogPostLayout.astro';
+import { getDb, normalizePost } from '../../../lib/db';
+import { renderMarkdown } from '../../../lib/markdown';
+import type { BlogPostRow } from '../../../lib/types';
+
+const lang = 'es' as const;
+const { slug } = Astro.params;
+
+if (!slug) return Astro.redirect(`/${lang}/blog`);
+
+const db = getDb();
+const row = db.prepare('SELECT * FROM posts WHERE slug = ? AND draft = 0').get(slug) as BlogPostRow | undefined;
+if (!row) return Astro.redirect('/404');
+
+const post = normalizePost(row);
+const contentHtml = renderMarkdown(post.content);
+---
+<BlogPostLayout post={post} lang={lang}>
+  <div set:html={contentHtml} />
+</BlogPostLayout>

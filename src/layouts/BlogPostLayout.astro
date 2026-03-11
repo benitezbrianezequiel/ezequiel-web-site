@@ -1,0 +1,82 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import { useTranslations, getLocalizedPath } from '../i18n/utils';
+import type { Lang } from '../i18n/translations';
+import type { BlogPost } from '../lib/types';
+
+interface Props {
+  post: BlogPost;
+  lang: Lang;
+}
+const { post, lang } = Astro.props;
+const t = useTranslations(lang);
+
+const dateLocale = lang === 'es' ? 'es-AR' : 'en-US';
+const formattedDate = new Date(post.pub_date).toLocaleDateString(dateLocale, {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+<BaseLayout title={`${post.title} — Ezequiel Benitez`} description={post.description}>
+  <div class="pt-24 pb-20">
+    <div class="container mx-auto px-4 max-w-3xl">
+      <!-- Back link -->
+      <a
+        href={getLocalizedPath('/blog', lang)}
+        class="inline-flex items-center gap-2 text-sm text-neutral-500 dark:text-neutral-400 hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors duration-200 mb-10"
+      >
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+        {t('blog.backToBlog')}
+      </a>
+
+      <!-- Article header -->
+      <header class="mb-10">
+        <!-- Tags -->
+        {post.tags && post.tags.length > 0 && (
+          <div class="flex flex-wrap gap-2 mb-4">
+            {post.tags.map(tag => (
+              <span class="px-3 py-1 text-sm rounded-full bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 font-medium">
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+
+        <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold text-neutral-900 dark:text-neutral-100 leading-tight mb-4">
+          {post.title}
+        </h1>
+
+        <p class="text-lg text-neutral-500 dark:text-neutral-400 mb-6">
+          {post.description}
+        </p>
+
+        <div class="flex items-center gap-3 text-sm text-neutral-400 dark:text-neutral-500 pb-8 border-b border-neutral-200 dark:border-neutral-800">
+          <span class="font-medium text-neutral-700 dark:text-neutral-300">Ezequiel Benitez</span>
+          <span>·</span>
+          <time datetime={post.pub_date}>
+            {t('blog.publishedOn')} {formattedDate}
+          </time>
+        </div>
+      </header>
+
+      <!-- Article content (HTML renderizado desde markdown) -->
+      <div class="prose prose-neutral dark:prose-invert prose-lg max-w-none
+        prose-headings:font-bold prose-headings:tracking-tight
+        prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-4
+        prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-3
+        prose-p:leading-relaxed prose-p:text-neutral-700 dark:prose-p:text-neutral-300
+        prose-a:text-cyan-500 dark:prose-a:text-cyan-400 prose-a:no-underline hover:prose-a:underline
+        prose-code:text-cyan-600 dark:prose-code:text-cyan-400 prose-code:bg-neutral-100 dark:prose-code:bg-neutral-800 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:font-normal
+        prose-pre:bg-neutral-900 dark:prose-pre:bg-neutral-900 prose-pre:border prose-pre:border-neutral-800
+        prose-blockquote:border-l-cyan-500 prose-blockquote:text-neutral-600 dark:prose-blockquote:text-neutral-400
+        prose-strong:text-neutral-900 dark:prose-strong:text-neutral-100
+        prose-li:text-neutral-700 dark:prose-li:text-neutral-300
+      ">
+        <slot />
+      </div>
+    </div>
+  </div>
+</BaseLayout>

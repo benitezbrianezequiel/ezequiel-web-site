@@ -1,0 +1,12 @@
+---
+import { clearSessionCookieHeader } from '../../lib/auth';
+
+if (Astro.request.method === 'POST') {
+  const response = Astro.redirect('/admin/login');
+  response.headers.set('Set-Cookie', clearSessionCookieHeader());
+  return response;
+}
+
+// GET: redirect a login de todas formas
+return Astro.redirect('/admin/login');
+---

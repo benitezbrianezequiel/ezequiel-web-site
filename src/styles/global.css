@@ -1,0 +1,51 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+/* Dark mode class-based variant for Tailwind v4 */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100;
+    transition-property: background-color, color;
+    transition-duration: 300ms;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold tracking-tight;
+  }
+}
+
+@layer components {
+  .container {
+    @apply mx-auto px-4 max-w-6xl;
+  }
+
+  .section-padding {
+    @apply py-20 md:py-28;
+  }
+
+  .section-title {
+    @apply text-3xl md:text-4xl font-bold mb-4 text-neutral-900 dark:text-neutral-100;
+  }
+
+  .section-subtitle {
+    @apply text-lg text-neutral-500 dark:text-neutral-400 max-w-2xl;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-6 py-3 bg-cyan-500 hover:bg-cyan-400 text-neutral-950 font-semibold rounded-lg transition-colors duration-200 cursor-pointer;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center gap-2 px-6 py-3 border border-cyan-500 text-cyan-500 dark:text-cyan-400 hover:bg-cyan-500/10 font-semibold rounded-lg transition-colors duration-200 cursor-pointer;
+  }
+
+  .card {
+    @apply rounded-xl border border-neutral-200 dark:border-neutral-800 p-6 bg-white dark:bg-neutral-900 hover:border-cyan-500 dark:hover:border-cyan-500 transition-all duration-200;
+  }
+}

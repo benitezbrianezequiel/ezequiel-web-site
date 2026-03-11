@@ -1,0 +1,43 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import BlogCard from '../../../components/blog/BlogCard.astro';
+import { getDb, normalizePost } from '../../../lib/db';
+import { useTranslations } from '../../../i18n/utils';
+import type { BlogPostRow } from '../../../lib/types';
+
+const lang = 'es' as const;
+const t = useTranslations(lang);
+
+const db = getDb();
+const rows = db.prepare(
+  'SELECT * FROM posts WHERE draft = 0 ORDER BY pub_date DESC, created_at DESC'
+).all() as BlogPostRow[];
+const posts = rows.map(normalizePost);
+---
+<BaseLayout title={`${t('blog.title')} — Ezequiel Benitez`} description={t('site.description')}>
+  <div class="pt-24 pb-20">
+    <div class="container mx-auto px-4 max-w-6xl">
+      <!-- Header -->
+      <div class="mb-14">
+        <span class="text-sm font-semibold text-cyan-500 dark:text-cyan-400 uppercase tracking-widest">
+          {t('blog.title')}
+        </span>
+        <h1 class="text-4xl md:text-5xl font-bold text-neutral-900 dark:text-neutral-100 mt-2 mb-4">
+          {t('blog.tagline')}
+        </h1>
+        <div class="w-16 h-1 rounded-full bg-cyan-500"></div>
+      </div>
+
+      <!-- Posts grid or empty state -->
+      {posts.length === 0 ? (
+        <div class="text-center py-20 text-neutral-400 dark:text-neutral-600">
+          <p class="text-lg">{t('blog.noPosts')}</p>
+        </div>
+      ) : (
+        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {posts.map(post => <BlogCard post={post} lang={lang} />)}
+        </div>
+      )}
+    </div>
+  </div>
+</BaseLayout>

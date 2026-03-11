@@ -1,0 +1,19 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Hero from '../../components/sections/Hero.astro';
+import About from '../../components/sections/About.astro';
+import Services from '../../components/sections/Services.astro';
+import Products from '../../components/sections/Products.astro';
+import Contact from '../../components/sections/Contact.astro';
+import { useTranslations } from '../../i18n/utils';
+
+const lang = 'es' as const;
+const t = useTranslations(lang);
+---
+<BaseLayout title={t('site.title')} description={t('site.description')}>
+  <Hero lang={lang} />
+  <About lang={lang} />
+  <Services lang={lang} />
+  <Products lang={lang} />
+  <Contact lang={lang} />
+</BaseLayout>

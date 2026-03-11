@@ -1,0 +1,12 @@
+node_modules
+dist
+.git
+.github
+.vscode
+*.md
+.env*
+data/blog.db
+data/blog.db-shm
+data/blog.db-wal
+.DS_Store
+Thumbs.db

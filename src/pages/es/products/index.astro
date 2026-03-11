@@ -1,0 +1,13 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Products from '../../../components/sections/Products.astro';
+import { useTranslations } from '../../../i18n/utils';
+
+const lang = 'es' as const;
+const t = useTranslations(lang);
+---
+<BaseLayout title={`${t('products.title')} — Ezequiel Benitez`} description={t('site.description')}>
+  <div class="pt-24">
+    <Products lang={lang} />
+  </div>
+</BaseLayout>

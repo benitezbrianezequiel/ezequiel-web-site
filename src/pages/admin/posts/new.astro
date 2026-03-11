@@ -1,0 +1,206 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getDb } from '../../../lib/db';
+
+let error = '';
+const today = new Date().toISOString().slice(0, 10);
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const title       = form.get('title')?.toString().trim() ?? '';
+  const slug        = form.get('slug')?.toString().trim() ?? '';
+  const description = form.get('description')?.toString().trim() ?? '';
+  const content     = form.get('content')?.toString() ?? '';
+  const pub_date    = form.get('pub_date')?.toString() || today;
+  const draft       = form.get('draft') === 'on' ? 1 : 0;
+  const tagsRaw     = form.get('tags')?.toString() ?? '';
+  const tags        = JSON.stringify(
+    tagsRaw.split(',').map(t => t.trim()).filter(Boolean)
+  );
+
+  if (!title || !slug || !content) {
+    error = 'Título, slug y contenido son obligatorios.';
+  } else {
+    try {
+      const db = getDb();
+      db.prepare(`
+        INSERT INTO posts (slug, title, description, content, tags, draft, pub_date)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `).run(slug, title, description, content, tags, draft, pub_date);
+      return Astro.redirect('/admin/dashboard');
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      error = msg.includes('UNIQUE')
+        ? 'Ya existe un post con ese slug.'
+        : `Error al guardar: ${msg}`;
+    }
+  }
+}
+---
+<AdminLayout title="Nuevo Post">
+  <Fragment slot="head">
+    <link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css" />
+  </Fragment>
+
+  <div class="flex items-center gap-3 mb-6">
+    <a href="/admin/dashboard" class="text-neutral-400 hover:text-neutral-600 transition-colors">
+      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+      </svg>
+    </a>
+    <h1 class="text-2xl font-bold text-neutral-900">Nuevo post</h1>
+  </div>
+
+  {error && (
+    <div class="mb-5 p-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
+      {error}
+    </div>
+  )}
+
+  <form method="POST" class="space-y-5">
+    <div class="grid sm:grid-cols-2 gap-5">
+      <!-- Título -->
+      <div class="sm:col-span-2">
+        <label class="block text-sm font-medium text-neutral-700 mb-1" for="title">
+          Título <span class="text-red-500">*</span>
+        </label>
+        <input
+          name="title"
+          id="title"
+          type="text"
+          required
+          placeholder="Mi primer post sobre Astro"
+          class="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:border-cyan-500 transition-colors"
+        />
+      </div>
+
+      <!-- Slug -->
+      <div>
+        <label class="block text-sm font-medium text-neutral-700 mb-1" for="slug">
+          Slug <span class="text-red-500">*</span>
+        </label>
+        <input
+          name="slug"
+          id="slug"
+          type="text"
+          required
+          pattern="[a-z0-9][a-z0-9\-]*[a-z0-9]"
+          placeholder="mi-primer-post"
+          class="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm font-mono focus:outline-none focus:border-cyan-500 transition-colors"
+        />
+      </div>
+
+      <!-- Fecha -->
+      <div>
+        <label class="block text-sm font-medium text-neutral-700 mb-1" for="pub_date">
+          Fecha de publicación
+        </label>
+        <input
+          name="pub_date"
+          id="pub_date"
+          type="date"
+          value={today}
+          class="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:border-cyan-500 transition-colors"
+        />
+      </div>
+
+      <!-- Descripción -->
+      <div class="sm:col-span-2">
+        <label class="block text-sm font-medium text-neutral-700 mb-1" for="description">
+          Descripción <span class="text-neutral-400 font-normal">(usada en cards y SEO)</span>
+        </label>
+        <input
+          name="description"
+          id="description"
+          type="text"
+          placeholder="Un breve resumen del post..."
+          class="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:border-cyan-500 transition-colors"
+        />
+      </div>
+
+      <!-- Tags -->
+      <div>
+        <label class="block text-sm font-medium text-neutral-700 mb-1" for="tags">
+          Tags <span class="text-neutral-400 font-normal">(separados por coma)</span>
+        </label>
+        <input
+          name="tags"
+          id="tags"
+          type="text"
+          placeholder="astro, typescript, tutorial"
+          class="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:border-cyan-500 transition-colors"
+        />
+      </div>
+
+      <!-- Draft toggle -->
+      <div class="flex items-center">
+        <label class="flex items-center gap-3 cursor-pointer select-none">
+          <input
+            name="draft"
+            type="checkbox"
+            class="w-4 h-4 rounded border-neutral-300 text-cyan-500 cursor-pointer"
+          />
+          <span class="text-sm text-neutral-700 font-medium">Guardar como borrador</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Contenido -->
+    <div>
+      <label class="block text-sm font-medium text-neutral-700 mb-2" for="content">
+        Contenido <span class="text-red-500">*</span>
+      </label>
+      <textarea id="content" name="content" required class="hidden"></textarea>
+    </div>
+
+    <div class="flex gap-3 pt-2">
+      <button
+        type="submit"
+        class="inline-flex items-center gap-2 px-5 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-white font-semibold rounded-lg text-sm transition-colors"
+      >
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+        </svg>
+        Crear post
+      </button>
+      <a
+        href="/admin/dashboard"
+        class="inline-flex items-center px-5 py-2.5 border border-neutral-300 text-neutral-600 font-semibold rounded-lg text-sm hover:bg-neutral-50 transition-colors"
+      >
+        Cancelar
+      </a>
+    </div>
+  </form>
+
+  <script is:inline src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
+  <script is:inline>
+    const easyMDE = new EasyMDE({
+      element: document.getElementById('content'),
+      spellChecker: false,
+      minHeight: '400px',
+      placeholder: 'Escribí el contenido del post en markdown...',
+      toolbar: [
+        'bold', 'italic', 'heading', '|',
+        'quote', 'code', 'unordered-list', 'ordered-list', '|',
+        'link', 'image', '|',
+        'preview', 'side-by-side', 'fullscreen', '|',
+        'guide'
+      ],
+      previewImagesInEditor: true,
+    });
+
+    // Auto-generar slug desde el título
+    const titleInput = document.getElementById('title');
+    const slugInput = document.getElementById('slug');
+    titleInput?.addEventListener('input', () => {
+      if (!slugInput.value) {
+        slugInput.value = titleInput.value
+          .toLowerCase()
+          .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-z0-9\s-]/g, '')
+          .trim()
+          .replace(/\s+/g, '-');
+      }
+    });
+  </script>
+</AdminLayout>

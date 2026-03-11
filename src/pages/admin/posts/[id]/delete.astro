@@ -1,0 +1,63 @@
+---
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+import { getDb, normalizePost } from '../../../../lib/db';
+import type { BlogPostRow } from '../../../../lib/types';
+
+const { id } = Astro.params;
+const db = getDb();
+
+if (Astro.request.method === 'POST') {
+  db.prepare('DELETE FROM posts WHERE id = ?').run(Number(id));
+  return Astro.redirect('/admin/dashboard');
+}
+
+// GET: mostrar confirmación
+const row = db.prepare('SELECT * FROM posts WHERE id = ?').get(Number(id)) as BlogPostRow | undefined;
+if (!row) return Astro.redirect('/admin/dashboard');
+const post = normalizePost(row);
+---
+<AdminLayout title={`Eliminar: ${post.title}`}>
+  <div class="flex items-center gap-3 mb-6">
+    <a href="/admin/dashboard" class="text-neutral-400 hover:text-neutral-600 transition-colors">
+      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+      </svg>
+    </a>
+    <h1 class="text-2xl font-bold text-neutral-900">Eliminar post</h1>
+  </div>
+
+  <div class="max-w-lg">
+    <div class="bg-red-50 border border-red-200 rounded-xl p-5 mb-6">
+      <div class="flex items-start gap-3">
+        <svg class="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.07 16.5c-.77.833.192 2.5 1.732 2.5z" />
+        </svg>
+        <div>
+          <p class="text-red-800 font-semibold">¿Eliminar este post?</p>
+          <p class="text-red-700 text-sm mt-1">
+            "<strong>{post.title}</strong>" será eliminado permanentemente.
+            Esta acción no se puede deshacer.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <form method="POST" class="flex gap-3">
+      <button
+        type="submit"
+        class="inline-flex items-center gap-2 px-5 py-2.5 bg-red-500 hover:bg-red-400 text-white font-semibold rounded-lg text-sm transition-colors"
+      >
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+        Sí, eliminar
+      </button>
+      <a
+        href="/admin/dashboard"
+        class="inline-flex items-center px-5 py-2.5 border border-neutral-300 text-neutral-600 font-semibold rounded-lg text-sm hover:bg-neutral-50 transition-colors"
+      >
+        Cancelar
+      </a>
+    </form>
+  </div>
+</AdminLayout>

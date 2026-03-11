@@ -1,0 +1,60 @@
+---
+import type { BlogPost } from '../../lib/types';
+import { useTranslations } from '../../i18n/utils';
+import type { Lang } from '../../i18n/translations';
+
+interface Props {
+  post: BlogPost;
+  lang: Lang;
+}
+const { post, lang } = Astro.props;
+const t = useTranslations(lang);
+
+const dateLocale = lang === 'es' ? 'es-AR' : 'en-US';
+const formattedDate = new Date(post.pub_date).toLocaleDateString(dateLocale, {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+<article class="card group flex flex-col h-full">
+  <!-- Date & Tags row -->
+  <div class="flex items-center justify-between mb-4">
+    <time
+      class="text-xs font-medium text-neutral-400 dark:text-neutral-500"
+      datetime={post.pub_date}
+    >
+      {formattedDate}
+    </time>
+    {post.tags && post.tags.length > 0 && (
+      <div class="flex flex-wrap gap-1">
+        {post.tags.slice(0, 2).map(tag => (
+          <span class="px-2 py-0.5 text-xs rounded-full bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 font-medium">
+            {tag}
+          </span>
+        ))}
+      </div>
+    )}
+  </div>
+
+  <!-- Title -->
+  <h2 class="text-lg font-bold text-neutral-900 dark:text-neutral-100 mb-3 group-hover:text-cyan-500 dark:group-hover:text-cyan-400 transition-colors duration-200 flex-1">
+    {post.title}
+  </h2>
+
+  <!-- Description -->
+  <p class="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed mb-5">
+    {post.description}
+  </p>
+
+  <!-- Read more link -->
+  <a
+    href={`/${lang}/blog/${post.slug}`}
+    class="inline-flex items-center gap-1 text-sm font-semibold text-cyan-500 dark:text-cyan-400 hover:gap-2 transition-all duration-200 mt-auto"
+  >
+    {t('blog.readMore')}
+    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+    </svg>
+  </a>
+</article>
