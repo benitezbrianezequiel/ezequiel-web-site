@@ -36,6 +36,9 @@ export function getDb(): Database.Database {
       created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
       updated_at  TEXT    NOT NULL DEFAULT (datetime('now'))
     );
+
+    CREATE INDEX IF NOT EXISTS idx_posts_published
+      ON posts (draft, pub_date DESC);
   `);
 
   return _db;
