@@ -2,6 +2,14 @@ import { defineMiddleware } from 'astro:middleware';
 import { verifySessionToken } from './lib/auth';
 
 export const onRequest = defineMiddleware(async (context, next) => {
+  const { hostname, href } = context.url;
+
+  // Redirigir www → non-www (301) para evitar contenido duplicado
+  if (hostname.startsWith('www.')) {
+    const canonical = href.replace(`://www.`, '://');
+    return context.redirect(canonical, 301);
+  }
+
   const { pathname } = context.url;
 
   // Solo interceptamos rutas /admin

@@ -5,6 +5,7 @@ import node from '@astrojs/node';
 
 // https://astro.build/config
 export default defineConfig({
+  site: process.env.SITE_URL || 'https://ezequielbenitez.site/',
   output: 'server',
   adapter: node({ mode: 'standalone' }),
   vite: {

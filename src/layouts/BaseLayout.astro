@@ -14,6 +14,9 @@ const { title, description } = Astro.props;
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const metaDescription = description ?? t('site.description');
+
+// URL canónica sin www
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).href;
 ---
 <html lang={lang} class="">
   <head>
@@ -22,6 +25,7 @@ const metaDescription = description ?? t('site.description');
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
     <meta name="description" content={metaDescription} />
+    <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <!-- No-flash dark mode: script sincrónico antes del paint -->
