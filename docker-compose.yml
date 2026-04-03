@@ -1,8 +1,8 @@
 services:
   web:
     build: .
-    ports:
-      - "4321:4321"
+    expose:
+      - "4321"
     environment:
       - ADMIN_USER=${ADMIN_USER}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
@@ -10,4 +10,13 @@ services:
       - DB_PATH=/app/data/blog.db
     volumes:
       - ./data:/app/data
+    restart: unless-stopped
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      - web
     restart: unless-stopped
