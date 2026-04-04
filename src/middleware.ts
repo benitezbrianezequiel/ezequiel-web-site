@@ -45,8 +45,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   // ── Public pages: cache para Cloudflare edge ──────────────────
   const response = await next();
+  const contentType = response.headers.get('Content-Type') ?? '';
 
-  if (pathname === '/sitemap.xml' || pathname === '/robots.txt') {
+  if (contentType.includes('text/html')) {
+    response.headers.set('Cache-Control', 'no-store');
+  } else if (pathname === '/sitemap.xml' || pathname === '/robots.txt') {
     response.headers.set('Cache-Control', 'public, max-age=3600, s-maxage=86400');
   } else if (pathname.includes('/blog/') && !pathname.endsWith('/blog') && !pathname.endsWith('/blog/')) {
     response.headers.set('Cache-Control', 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400');

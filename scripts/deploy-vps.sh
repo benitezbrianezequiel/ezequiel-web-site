@@ -71,6 +71,16 @@ done
 log "Checking nginx-facing endpoint"
 curl -fIsS "$HEALTHCHECK_URL" >/dev/null || fail "Healthcheck failed at $HEALTHCHECK_URL"
 
+log "Checking built asset through nginx"
+homepage_html="$(curl -fsS "$HEALTHCHECK_URL")"
+asset_path="$(printf '%s' "$homepage_html" | grep -oE '/_astro/[^"'"'"' ]+\.(css|js)' | head -n 1 || true)"
+[[ -n "$asset_path" ]] || fail "Could not find an Astro asset in $HEALTHCHECK_URL"
+
+asset_origin="$(node -e "console.log(new URL(process.argv[1]).origin)" "$HEALTHCHECK_URL")"
+asset_url="$asset_origin$asset_path"
+curl -fIsS "$asset_url" >/dev/null || fail "Asset check failed at $asset_url"
+
 log "Deploy completed successfully"
 printf '[%s] DB_PATH=%s\n' "$APP_NAME" "$DB_PATH"
 printf '[%s] Healthcheck=%s\n' "$APP_NAME" "$HEALTHCHECK_URL"
+printf '[%s] AssetCheck=%s\n' "$APP_NAME" "$asset_url"
